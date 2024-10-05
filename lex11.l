@@ -34,9 +34,7 @@
 
 [a-zA-Z][a-zA-Z0-9]*  { return IDENTIFIER; }
 [0-9]+          { return NUMBER; }
-
-[ \t\n]+        ; /* ignore whitespace */
-
+[ \t\n]+        ; /* ignore space */
 .               { printf("Lexical error: unexpected character %s\n", yytext); }
 
 %%
