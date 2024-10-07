@@ -2,12 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 int yylex(void);
+
 void yyerror(const char *s);
 %}
-%union {
-    int intVal;
-    char* varName;
-}
+
 %token TRUE FALSE AND OR NOT LET INT BOOL DIV MOD GET_BOOL
 %token DEFINE_FUN PRINT GET_INT IF LPAREN RPAREN
 %token PLUS MINUS TIMES EQUALS LESS LESS_EQ GREATER GREATER_EQ
