@@ -12,65 +12,83 @@ void yyerror(const char *s);
 %token IDENTIFIER NUMBER
 
 %%
-program:
-    | program define_fun
-    | program print_expr
+program
+    : define_fun program
+    | print
     ;
 
-define_fun:
-    "(define-fun" VAR "(" params ")" type expr ")"
-    {
-        // Function definition handling (optional)
-    }
+define_fun
+    : '(' DEFINE_FUN IDENTIFIER '(' param_list ')' type expr ')'
     ;
 
-params:
-    | params VAR type
+param_list
+    : /* empty */
+    | param param_list
     ;
 
-print_expr:
-    "(print" expr ")"
+param
+    : IDENTIFIER type
     ;
 
-type:
-    INT
+print
+    : '(' PRINT expr ')'
+    ;
+
+type
+    : INT
     | BOOL
     ;
 
-expr:
-    term
-    | expr '+' term
-    | expr '-' term
-    | expr '*' term
-    | expr DIV term
-    | expr MOD term
-    | '(if' fla term term ')'
-    | '(fun' expr* ')'
-    | '(let' '(' VAR expr ')' term ')'
+expr
+    : term
+    | fla
     ;
 
-term:
-    CONST
-    | VAR
-    | '(get-int)'
+term
+    : NUMBER
+    | IDENTIFIER
+    | '(' GET_INT ')'
+    | '(' PLUS term term_list ')'
+    | '(' TIMES term term_list ')'
+    | '(' MINUS term term ')'
+    | '(' DIV term term ')'
+    | '(' MOD term term ')'
+    | '(' IF fla term term ')'
+    | '(' IDENTIFIER expr_list ')'
+    | '(' LET '(' IDENTIFIER expr ')' term ')'
     ;
 
-fla:
-    TRUE
+term_list
+    : term
+    | term term_list
+ ;
+
+fla
+    : TRUE
     | FALSE
-    | VAR
-    | '(get-bool)'
-    | '(= ' term term ')'
-    | '(<' term term ')'
-    | '(<= ' term term ')'
-    | '(>' term term ')'
-    | '(>= ' term term ')'
-    | '(not' fla ')'
-    | '(and' fla fla ')'
-    | '(or' fla fla ')'
-    | '(if' fla fla fla ')'
-    | '(fun' expr* ')'
-    | '(let' '(' VAR expr ')' fla ')'
+    | IDENTIFIER
+    | '(' GET_BOOL ')'
+    | '(' EQUALS term term ')'
+    | '(' LESS term term ')'
+    | '(' LESS_EQ term term ')'
+    | '(' GREATER term term ')'
+    | '(' GREATER_EQ term term ')'
+    | '(' NOT fla ')'
+    | '(' AND fla fla_list ')'
+    | '(' OR fla fla_list ')'
+    | '(' IF fla fla fla ')'
+    | '(' IDENTIFIER expr_list ')'
+    | '(' LET '(' IDENTIFIER expr ')' fla ')'
+    ;
+
+fla_list
+    : fla
+    | fla fla_list
+    ;
+
+expr_list
+    : /* empty */
+    | expr expr_list
     ;
 
 %%
