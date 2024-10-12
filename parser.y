@@ -1,101 +1,68 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
-int yylex(void);
+#include "y.tab.h"
 
+int yylex(void);
 void yyerror(const char *s);
 %}
 
-%token TRUE FALSE AND OR NOT LET INT BOOL DIV MOD GET_BOOL
-%token DEFINE_FUN PRINT GET_INT IF LPAREN RPAREN
-%token PLUS MINUS TIMES EQUALS LESS LESS_EQ GREATER GREATER_EQ
-%token IDENTIFIER NUMBER
+%token BOOLEAN_CONSTANTS BOOLEAN_OPERATORS LOCAL_VAR_DECLARATION VARIABLE_FUNCTION_TYPES ARITHMETIC_OPERATIONS PREDEFINED_FUNCTION
 
 %%
-program
-    : define_fun program
-    | print
+program: define_fun program
+       | print_expr
+       ;
+
+define_fun: "(define-fun" fun "(" var type_list ")" type expr ")"
+          ;
+
+print_expr: "(print" expr ")"
+           ;
+
+type_list: type_list type
+          | /* empty */
+          ;
+
+type: VARIABLE_FUNCTION_TYPES
     ;
 
-define_fun
-    : '(' DEFINE_FUN IDENTIFIER '(' param_list ')' type expr ')'
+expr: term
+    | "(if" fla term term ")"
+    | "(fun" expr ")"
+    | "(let" "(" var expr ")" term ")"
     ;
 
-param_list
-    : /* empty */
-    | param param_list
+term: const
+    | var
+    | "(get-int)"
+    | "(+" term term ")"
+    | "(-" term term ")"
+    | "(div" term term ")"
+    | "(mod" term term ")"
     ;
 
-param
-    : IDENTIFIER type
-    ;
+fla: BOOLEAN_CONSTANTS
+   | var
+   | "(get-bool)"
+   | "(=" term term ")"
+   | "(<" term term ")"
+   | "(<=" term term ")"
+   | "(>" term term ")"
+   | "(>=" term term ")"
+   | "(not" fla ")"
+   | "(and" fla fla ")"
+   | "(or" fla fla ")"
+   | "(if" fla fla fla ")"
+   ;
 
-print
-    : '(' PRINT expr ')'
-    ;
+%% 
 
-type
-    : INT
-    | BOOL
-    ;
-
-expr
-    : term
-    | fla
-    ;
-
-term
-    : NUMBER
-    | IDENTIFIER
-    | '(' GET_INT ')'
-    | '(' PLUS term term_list ')'
-    | '(' TIMES term term_list ')'
-    | '(' MINUS term term ')'
-    | '(' DIV term term ')'
-    | '(' MOD term term ')'
-    | '(' IF fla term term ')'
-    | '(' IDENTIFIER expr_list ')'
-    | '(' LET '(' IDENTIFIER expr ')' term ')'
-    ;
-
-term_list
-    : term
-    | term term_list
- ;
-
-fla
-    : TRUE
-    | FALSE
-    | IDENTIFIER
-    | '(' GET_BOOL ')'
-    | '(' EQUALS term term ')'
-    | '(' LESS term term ')'
-    | '(' LESS_EQ term term ')'
-    | '(' GREATER term term ')'
-    | '(' GREATER_EQ term term ')'
-    | '(' NOT fla ')'
-    | '(' AND fla fla_list ')'
-    | '(' OR fla fla_list ')'
-    | '(' IF fla fla fla ')'
-    | '(' IDENTIFIER expr_list ')'
-    | '(' LET '(' IDENTIFIER expr ')' fla ')'
-    ;
-
-fla_list
-    : fla
-    | fla fla_list
-    ;
-
-expr_list
-    : /* empty */
-    | expr expr_list
-    ;
-
-%%
+int main(void) {
+    yyparse();
+    return 0;
+}
 
 void yyerror(const char *s) {
-    fprintf("5s\n", s);
-}
-int main() {
-    return yyparse();
+    fprintf(stderr, "Syntax error: %s\n", s);
 }
